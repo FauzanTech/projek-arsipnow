@@ -1,23 +1,20 @@
-const { suratMasuk } = require('../models');
+const { suratKeluar } = require('../models');
 const fs = require('fs');
 const { Op } = require('sequelize');
 
 exports.uploadSurat = async (req, res) => {
     try {
-        const { no_surat, tgl_diterima, tgl_surat, perihal, pengirim } = req.body;
+        const { no_surat, tgl_surat, tujuan, perihal, penandatangan } = req.body;
         const file = req.file;
-
-        // console.log('req.file:', req.file);
-        // console.log('req.body:', req.body);
 
         if (!file) return res.status(400).send('File harus diupload!');
 
-        const suratBaru = await suratMasuk.create({
+        const suratBaru = await suratKeluar.create({
             no_surat,
-            tgl_diterima,
             tgl_surat,
+            tujuan,
             perihal,
-            pengirim,
+            penandatangan,
             file_surat: file.path
         });
 
@@ -35,7 +32,7 @@ exports.uploadSurat = async (req, res) => {
 exports.getSurat = async (req, res) => {
     try {
         const id = req.params.id;
-        const surat = await suratMasuk.findByPk(id);
+        const surat = await suratKeluar.findByPk(id);
 
         if (!surat) return res.status(400).send('Surat tidak ditemukan!');
         
@@ -49,7 +46,7 @@ exports.getSurat = async (req, res) => {
 
 exports.getAll = async (req, res) => {
     try {
-        const surat = await suratMasuk.findAll();
+        const surat = await suratKeluar.findAll();
         
         if (!surat) return res.status(400).send('Surat kosong!');
         
@@ -64,7 +61,7 @@ exports.getAll = async (req, res) => {
 exports.updateSurat = async (req, res) => {
     try {
         const id = req.params.id;
-        const surat = await suratMasuk.findByPk(id);
+        const surat = await suratKeluar.findByPk(id);
         if (!surat) return res.status(400).send('Surat tidak ditemukan!');
 
         if (req.file) {
@@ -77,9 +74,9 @@ exports.updateSurat = async (req, res) => {
 
         surat.no_surat = req.body.no_surat || surat.no_surat;
         surat.tgl_diterima = req.body.tgl_diterima || surat.tgl_diterima;
-        surat.tgl_surat = req.body.tgl_surat || surat.tgl_surat;
+        surat.tujuan = req.body.tujuan || surat.tujuan;
         surat.perihal = req.body.perihal || surat.perihal;
-        surat.pengirim = req.body.pengirim || surat.pengirim;
+        surat.penandatangan = req.body.penandatangan || surat.penandatangan;
 
         await surat.save();
 
@@ -94,11 +91,11 @@ exports.updateSurat = async (req, res) => {
 exports.deleteSurat = async (req, res) => {
     try {
         const id = req.params.id;
-        const surat = await suratMasuk.findByPk(id);
+        const surat = await suratKeluar.findByPk(id);
         if (!surat) return res.status(400).send('Surat tidak ditemukan')
         fs.unlinkSync(surat.file_surat);
 
-        suratMasuk.destroy({where: { id }});
+        suratKeluar.destroy({where: { id }});
 
         return res.status(200).send('Surat berhasil dihapus!'); 
 
@@ -118,10 +115,10 @@ exports.cariSurat = async (req, res) => {
             [Op.or]: [
                 {no_surat : { [Op.like]: `%${keyword}%` }},
                 {perihal : { [Op.like]: `%${keyword}%` }},
-                {pengirim : { [Op.like]: `%${keyword}%` }}
+                {tujuan : { [Op.like]: `%${keyword}%` }},
+                {penandatangan : { [Op.like]: `%${keyword}%` }}
             ]
         };
-
 
         if (tanggal) {
             const awal = new Date(`${tanggal}T00:00:00`);
@@ -131,7 +128,7 @@ exports.cariSurat = async (req, res) => {
             };
         };
 
-        const hasil = await suratMasuk.findAll({where: kondisi, order: [['createdAt', 'DESC']]});
+        const hasil = await suratKeluar.findAll({where: kondisi, order: [['createdAt', 'DESC']]});
 
         res.status(200).json(hasil);
 

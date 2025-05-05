@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       tgl_surat: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
       },
       tujuan: {
         type: Sequelize.STRING

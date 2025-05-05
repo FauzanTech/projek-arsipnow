@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { uploadSurat, getSurat, getAll, updateSurat, deleteSurat, cariSurat } = require('../controllers/smController');
+const { uploadSurat, getSurat, getAll, updateSurat, deleteSurat, cariSurat } = require('../controllers/skController');
 const upload = require('../middlewares/upload');
 
 router.post('/', upload.single('file'), uploadSurat);
