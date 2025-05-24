@@ -1,5 +1,6 @@
 const { where } = require('sequelize');
 const { User } = require('../models');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 // const sequelize = require('sequelize')
 
@@ -13,10 +14,12 @@ exports.login = async (req, res) => {
         const valid = bcrypt.compare(password, user.password);
     
         if (valid){
-            return res.status(200).send('Login berhasil!');
+            const token = jwt.sign({ email: user.email, userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            return res.status(200).json({ token });
         } else {
             return res.status(401).send('Password salah');
         }
+        
         
     } catch (error) {
         console.error("Login error: ", error);
